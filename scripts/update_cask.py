@@ -81,7 +81,7 @@ def cask(version, digest):
 
   conflicts_with cask: "codexbar"
   depends_on arch: :arm64
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   app "CodexBar.app", target: "CodexBar Proxy.app"
 

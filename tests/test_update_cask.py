@@ -24,6 +24,11 @@ class CaskUpdateTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             tap.cask("0.82.0-proxy.1", "invalid")
 
+    def test_minimum_macos_uses_supported_homebrew_dsl(self):
+        rendered = tap.cask("0.82.0-proxy.1", "a" * 64)
+        self.assertIn("depends_on macos: :sonoma", rendered)
+        self.assertIn("depends_on arch: :arm64", rendered)
+
     def test_rejects_foreign_asset_urls_and_duplicate_checksums(self):
         release = {"tag_name": "v0.82.0-proxy.1", "assets": [
             {"name": "SHA256SUMS", "browser_download_url": "https://example.com/SHA256SUMS"}]}
