@@ -1,0 +1,40 @@
+name: Update casks
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17,47 * * * *'
+permissions:
+  contents: write
+concurrency:
+  group: update-casks
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: true
+      - name: Test synchronization rules
+        run: python3 -m unittest discover -s tests -v
+      - name: Synchronize latest public proxy release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/update_cask.py
+      - name: Verify Cask syntax
+        run: |
+          if test -f Casks/codexbar-proxy.rb; then
+            ruby -c Casks/codexbar-proxy.rb
+          fi
+      - name: Commit verified version and checksum
+        run: |
+          if test -z "$(git status --porcelain -- Casks/)"; then
+            echo 'Casks are current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Casks/
+          git commit -m 'Update CodexBar Proxy cask'
+          git push origin HEAD:main
